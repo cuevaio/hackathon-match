@@ -13,6 +13,7 @@ interface ParticipantGridProps {
 export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
   const [participants, setParticipants] = useState(initialParticipants);
   const [progress, setProgress] = useState(100);
+  const [isPaused, setIsPaused] = useState(false);
 
   const SHUFFLE_INTERVAL = 40000;
   const TICK_RATE = 100;
@@ -26,26 +27,33 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
     return shuffled;
   }, []);
 
+  const handleManualShuffle = useCallback(() => {
+    setParticipants((current) => shuffleArray(current));
+    setProgress(100);
+  }, [shuffleArray]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        const decrement = (100 / SHUFFLE_INTERVAL) * TICK_RATE;
-        const newProgress = Math.max(0, prev - decrement);
+      if (!isPaused) {
+        setProgress((prev) => {
+          const decrement = (100 / SHUFFLE_INTERVAL) * TICK_RATE;
+          const newProgress = Math.max(0, prev - decrement);
 
-        if (newProgress === 0 && prev > 0) {
-          setTimeout(() => {
-            setParticipants((current) => shuffleArray(current));
-          }, 300);
+          if (newProgress === 0 && prev > 0) {
+            setTimeout(() => {
+              setParticipants((current) => shuffleArray(current));
+            }, 300);
 
-          return 100;
-        }
+            return 100;
+          }
 
-        return newProgress;
-      });
+          return newProgress;
+        });
+      }
     }, TICK_RATE);
 
     return () => clearInterval(interval);
-  }, [shuffleArray]);
+  }, [shuffleArray, isPaused]);
 
   return (
     <>
@@ -73,7 +81,12 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
         </AnimatePresence>
       </motion.div>
 
-      <ShuffleProgressBar progress={progress} />
+      <ShuffleProgressBar 
+        progress={progress} 
+        isPaused={isPaused}
+        onTogglePause={() => setIsPaused(!isPaused)}
+        onShuffle={handleManualShuffle}
+      />
     </>
   );
 }
