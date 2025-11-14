@@ -36,7 +36,7 @@ export default function ProfileFormClient({
     organization: participant.organization || "",
     hasBuilt: participant.hasBuilt || "",
     avatarSeed: participant.avatarSeed || participant.id,
-    hasTeam: participant.hasTeam,
+    teamName: participant.teamName || "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -244,6 +244,35 @@ export default function ProfileFormClient({
                 />
               </div>
 
+              <div className="space-y-2">
+                <label
+                  htmlFor="teamName"
+                  className="text-sm font-medium text-foreground uppercase tracking-wide"
+                >
+                  Team Name
+                </label>
+                <input
+                  id="teamName"
+                  name="teamName"
+                  type="text"
+                  value={formData.teamName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      teamName: value,
+                    }));
+                  }}
+                  className="w-full px-4 py-3 border-2 border-border bg-background text-foreground rounded-sm focus:outline-none focus:border-primary transition-colors"
+                  disabled={isLoading}
+                  placeholder="Enter your team name"
+                  maxLength={50}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter your team name or leave empty if looking for teammates
+                </p>
+              </div>
+
               <div className="space-y-2 md:col-span-2">
                 <label
                   htmlFor="wantsToBuild"
@@ -356,34 +385,6 @@ export default function ProfileFormClient({
                   placeholder="https://x.com/username"
                 />
               </div>
-            </div>
-
-            <div className="space-y-3 md:col-span-2 pt-4 border-t-2 border-border">
-              <div className="flex items-center gap-3">
-                <input
-                  id="hasTeam"
-                  name="hasTeam"
-                  type="checkbox"
-                  checked={formData.hasTeam}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      hasTeam: e.target.checked,
-                    }))
-                  }
-                  className="w-5 h-5 border-2 border-border rounded-sm bg-background text-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 cursor-pointer"
-                  disabled={isLoading}
-                />
-                <label
-                  htmlFor="hasTeam"
-                  className="text-sm font-medium text-foreground uppercase tracking-wide cursor-pointer"
-                >
-                  I already have a team
-                </label>
-              </div>
-              <p className="text-xs text-muted-foreground ml-8">
-                Check this if you&apos;re not looking for team members
-              </p>
             </div>
 
             {message && (

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const participants = pgTable("participants", {
   id: text("id").primaryKey(),
@@ -15,7 +15,7 @@ export const participants = pgTable("participants", {
   hasBuilt: text("has_built"),
   hashedPassword: text("hashed_password").notNull(),
   avatarSeed: text("avatar_seed"),
-  hasTeam: boolean("has_team").notNull().default(false),
+  teamName: text("team_name"),
 });
 
 export const sessions = pgTable("sessions", {

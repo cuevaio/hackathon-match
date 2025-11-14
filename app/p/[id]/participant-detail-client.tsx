@@ -12,17 +12,23 @@ import {
   Mail,
   Phone,
   ArrowLeft,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import { FaXTwitter, FaLinkedin, FaGithub } from "react-icons/fa6";
 import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAvatarUrl } from "@/lib/avatar";
 import type { Participant } from "@/db/schema";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ParticipantDetailClientProps {
   participant: Participant;
+  currentUser: Participant | null;
 }
 
 function getProfileIcon(profile: string) {
@@ -63,38 +69,94 @@ function getProfileClass(profile: string) {
 
 export default function ParticipantDetailClient({
   participant,
+  currentUser,
 }: ParticipantDetailClientProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const avatarUrl = getAvatarUrl(participant);
   const profileClass = getProfileClass(participant.profile);
   const icon = getProfileIcon(participant.profile);
 
+  const canManageTeam =
+    currentUser &&
+    currentUser.id !== participant.id &&
+    (!participant.teamName ||
+      participant.teamName === currentUser.teamName);
+
+  async function handleTeamAction(action: "add" | "remove") {
+    setMessage(null);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participantId: participant.id,
+          teamName: action === "add" ? currentUser?.teamName : null,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setMessage({
+          type: "error",
+          text: data.error || "Failed to update team",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setMessage({
+        type: "success",
+        text:
+          action === "add"
+            ? "Participant added to team!"
+            : "Participant removed from team!",
+      });
+      setIsLoading(false);
+      router.refresh();
+    } catch {
+      setMessage({
+        type: "error",
+        text: "An error occurred. Please try again.",
+      });
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className={`min-h-screen bg-background ${profileClass}`}>
-      <div
-        className="relative overflow-hidden scanline-overlay"
-        style={{
-          backgroundColor: "var(--profile-color)",
-        }}
-      >
-        <div className="pixel-grid-overlay h-32 flex items-center justify-start overflow-hidden">
-          {participant.hasTeam && (
-            <div className="flex whitespace-nowrap">
-              {Array.from({ length: 15 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="text-2xl font-bold tracking-widest uppercase inline-block px-8"
-                  style={{
-                    color: "rgba(255, 255, 255, 0.3)",
-                    fontFamily: "monospace",
-                    letterSpacing: "0.3em",
-                  }}
-                >
-                  HAS TEAM
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        <div
+          className="relative overflow-hidden scanline-overlay"
+          style={{
+            backgroundColor: "var(--profile-color)",
+          }}
+        >
+          <div className="pixel-grid-overlay h-32 flex items-center justify-start overflow-hidden">
+            {participant.teamName && (
+              <div className="flex whitespace-nowrap">
+                {Array.from({ length: 15 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="text-2xl font-bold tracking-widest uppercase inline-block px-8"
+                    style={{
+                      color: "rgba(255, 255, 255, 0.3)",
+                      fontFamily: "monospace",
+                      letterSpacing: "0.3em",
+                    }}
+                  >
+                    {participant.teamName}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
 
         <div className="absolute top-4 left-4 z-10">
           <Link
@@ -135,19 +197,19 @@ export default function ParticipantDetailClient({
                     style={{
                       borderColor: "var(--profile-color)",
                     }}
-                  >
-                    <div className="w-full h-full relative">
-                      {participant.hasTeam && (
-                        <div
-                          className="absolute top-2 left-2 w-10 h-10 border-2 flex items-center justify-center text-primary-foreground z-10"
-                          style={{
-                            backgroundColor: "var(--profile-color)",
-                            borderColor: "hsl(var(--card))",
-                          }}
-                        >
-                          <Users className="w-6 h-6" />
-                        </div>
-                      )}
+                    >
+                      <div className="w-full h-full relative">
+                        {participant.teamName && (
+                          <div
+                            className="absolute top-2 left-2 w-10 h-10 border-2 flex items-center justify-center text-primary-foreground z-10"
+                            style={{
+                              backgroundColor: "var(--profile-color)",
+                              borderColor: "hsl(var(--card))",
+                            }}
+                          >
+                            <Users className="w-6 h-6" />
+                          </div>
+                        )}
                       <div
                         className="absolute top-2 right-2 w-10 h-10 border-2 flex items-center justify-center text-primary-foreground z-10"
                         style={{
@@ -190,7 +252,59 @@ export default function ParticipantDetailClient({
                         {participant.organization}
                       </p>
                     )}
+
+                    {participant.teamName && (
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-primary">
+                          Team: {participant.teamName}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  {message && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-3 border-2 rounded-sm text-sm ${
+                        message.type === "success"
+                          ? "border-green-500 bg-green-500/10 text-green-500"
+                          : "border-red-500 bg-red-500/10 text-red-500"
+                      }`}
+                    >
+                      {message.text}
+                    </motion.div>
+                  )}
+
+                  {canManageTeam && currentUser?.teamName && (
+                    <div className="space-y-3 p-4 border-2 border-border rounded-sm bg-muted/30">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Team Management
+                      </p>
+                      {!participant.teamName ? (
+                        <Button
+                          onClick={() => handleTeamAction("add")}
+                          disabled={isLoading}
+                          className="w-full gap-2"
+                          variant="outline"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Add to {currentUser.teamName}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleTeamAction("remove")}
+                          disabled={isLoading}
+                          className="w-full gap-2"
+                          variant="outline"
+                        >
+                          <UserMinus className="w-4 h-4" />
+                          Remove from {currentUser.teamName}
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex flex-wrap gap-2">
                     {participant.email && (

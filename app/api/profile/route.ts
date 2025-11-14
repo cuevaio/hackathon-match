@@ -15,6 +15,9 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
 
+    const teamName = body.teamName?.trim() || null;
+    const sanitizedTeamName = teamName && teamName.length > 0 && teamName.length <= 50 ? teamName : null;
+
     const updateData = {
       name: body.name,
       phoneNumber: body.phoneNumber,
@@ -27,7 +30,7 @@ export async function PUT(request: NextRequest) {
       organization: body.organization || null,
       hasBuilt: body.hasBuilt || null,
       avatarSeed: body.avatarSeed || null,
-      hasTeam: body.hasTeam ?? false,
+      teamName: sanitizedTeamName,
     };
 
     const [updated] = await db

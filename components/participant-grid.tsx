@@ -16,17 +16,13 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
   const [progress, setProgress] = useState(100);
   const [isPaused, setIsPaused] = useState(false);
   const [selectedRole, setSelectedRole] = useState("all");
-  const [selectedTeamStatus, setSelectedTeamStatus] = useState("all");
 
   const SHUFFLE_INTERVAL = 40000;
   const TICK_RATE = 100;
 
   const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (selectedRole !== "all") count++;
-    if (selectedTeamStatus !== "all") count++;
-    return count;
-  }, [selectedRole, selectedTeamStatus]);
+    return selectedRole !== "all" ? 1 : 0;
+  }, [selectedRole]);
 
   const shuffleArray = useCallback((array: Participant[]) => {
     const shuffled = [...array];
@@ -39,18 +35,12 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
 
   const displayedParticipants = useMemo(() => {
     return participants.filter((participant) => {
-      const roleMatch =
+      return (
         selectedRole === "all" ||
-        participant.profile.toLowerCase().includes(selectedRole);
-
-      const teamMatch =
-        selectedTeamStatus === "all" ||
-        (selectedTeamStatus === "yes" && participant.hasTeam) ||
-        (selectedTeamStatus === "no" && !participant.hasTeam);
-
-      return roleMatch && teamMatch;
+        participant.profile.toLowerCase().includes(selectedRole)
+      );
     });
-  }, [participants, selectedRole, selectedTeamStatus]);
+  }, [participants, selectedRole]);
 
   const handleManualShuffle = useCallback(() => {
     setParticipants((current) => shuffleArray(current));
@@ -59,7 +49,6 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
 
   const handleClearFilters = useCallback(() => {
     setSelectedRole("all");
-    setSelectedTeamStatus("all");
   }, []);
 
   useEffect(() => {
@@ -89,9 +78,7 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
     <>
       <ParticipantFilters
         selectedRole={selectedRole}
-        selectedTeamStatus={selectedTeamStatus}
         onRoleChange={setSelectedRole}
-        onTeamStatusChange={setSelectedTeamStatus}
         onClearFilters={handleClearFilters}
         activeFilterCount={activeFilterCount}
       />

@@ -6,9 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface ParticipantFiltersProps {
   selectedRole: string;
-  selectedTeamStatus: string;
   onRoleChange: (role: string) => void;
-  onTeamStatusChange: (status: string) => void;
   onClearFilters: () => void;
   activeFilterCount: number;
 }
@@ -22,17 +20,9 @@ const ROLES = [
   { value: "other", label: "Other" },
 ];
 
-const TEAM_STATUS = [
-  { value: "all", label: "All" },
-  { value: "yes", label: "Has Team" },
-  { value: "no", label: "No Team" },
-];
-
 export function ParticipantFilters({
   selectedRole,
-  selectedTeamStatus,
   onRoleChange,
-  onTeamStatusChange,
   onClearFilters,
   activeFilterCount,
 }: ParticipantFiltersProps) {
@@ -66,27 +56,6 @@ export function ParticipantFilters({
                 className="rounded-sm border-2 text-xs uppercase font-medium"
               >
                 {role.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1">
-          <label className="block text-xs uppercase font-medium mb-2 text-muted-foreground">
-            Team Status
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {TEAM_STATUS.map((status) => (
-              <Button
-                key={status.value}
-                onClick={() => onTeamStatusChange(status.value)}
-                variant={
-                  selectedTeamStatus === status.value ? "default" : "outline"
-                }
-                size="sm"
-                className="rounded-sm border-2 text-xs uppercase font-medium"
-              >
-                {status.label}
               </Button>
             ))}
           </div>

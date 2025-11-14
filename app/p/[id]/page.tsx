@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { participants } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import ParticipantDetailClient from "./participant-detail-client";
+import { getCurrentSession } from "@/lib/session";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,5 +27,9 @@ export default async function ParticipantPage({ params }: PageProps) {
     notFound();
   }
 
-  return <ParticipantDetailClient participant={participant} />;
+  const { user } = await getCurrentSession();
+
+  return (
+    <ParticipantDetailClient participant={participant} currentUser={user} />
+  );
 }

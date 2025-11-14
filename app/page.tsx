@@ -3,16 +3,34 @@ import { participants as participantsTable } from "@/db/schema";
 import { PixelatedTitle } from "@/components/pixelated-title";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ParticipantGrid } from "@/components/participant-grid";
+import { TeamSection } from "@/components/team-section";
 import Link from "next/link";
 import { User } from "lucide-react";
+import type { Participant } from "@/db/schema";
 
 export const revalidate = 60;
 
 export default async function Home() {
   const participants = await db.select().from(participantsTable);
 
-  // eslint-disable-next-line react-hooks/purity
-  const randomSortedParticipants = participants.sort(() => Math.random() - 0.5);
+  const participantsWithoutTeam = participants.filter((p) => !p.teamName);
+  const participantsWithTeam = participants.filter((p) => p.teamName);
+
+  const teamGroups = participantsWithTeam.reduce(
+    (acc, participant) => {
+      const teamName = participant.teamName!;
+      if (!acc[teamName]) {
+        acc[teamName] = [];
+      }
+      acc[teamName].push(participant);
+      return acc;
+    },
+    {} as Record<string, Participant[]>
+  );
+
+  const sortedTeamNames = Object.keys(teamGroups).sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -39,7 +57,44 @@ export default async function Home() {
           </div>
         </div>
 
-        <ParticipantGrid initialParticipants={randomSortedParticipants} />
+        {participantsWithoutTeam.length > 0 && (
+          <div className="mb-12">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold uppercase tracking-wide text-foreground text-center mb-2">
+                Looking for Teammates
+              </h2>
+              <p className="text-sm text-muted-foreground text-center">
+                {participantsWithoutTeam.length}{" "}
+                {participantsWithoutTeam.length === 1
+                  ? "participant"
+                  : "participants"}{" "}
+                available
+              </p>
+            </div>
+            <ParticipantGrid initialParticipants={participantsWithoutTeam} />
+          </div>
+        )}
+
+        {sortedTeamNames.length > 0 && (
+          <div>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold uppercase tracking-wide text-foreground text-center mb-2">
+                Teams
+              </h2>
+              <p className="text-sm text-muted-foreground text-center">
+                {sortedTeamNames.length}{" "}
+                {sortedTeamNames.length === 1 ? "team" : "teams"} formed
+              </p>
+            </div>
+            {sortedTeamNames.map((teamName) => (
+              <TeamSection
+                key={teamName}
+                teamName={teamName}
+                members={teamGroups[teamName]}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

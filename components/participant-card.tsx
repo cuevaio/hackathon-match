@@ -56,6 +56,8 @@ export default function ParticipantCard({ participant }: ParticipantCardProps) {
   const profileClass = getProfileClass(participant.profile);
   const icon = getProfileIcon(participant.profile);
   const [isHovered, setIsHovered] = useState(false);
+  
+  const displayTeamName = participant.teamName;
 
   return (
     <Link href={`/p/${participant.id}`} className="block">
@@ -108,7 +110,7 @@ export default function ParticipantCard({ participant }: ParticipantCardProps) {
                   />
                 </div>
 
-                {participant.hasTeam && (
+                {displayTeamName && (
                   <div
                     className="absolute -top-2 -left-2 w-8 h-8 border-2 flex items-center justify-center text-primary-foreground"
                     style={{
@@ -159,6 +161,26 @@ export default function ParticipantCard({ participant }: ParticipantCardProps) {
                     backgroundColor: "var(--profile-color)",
                   }}
                 />
+
+                {displayTeamName && (
+                  <div className="text-center mb-1">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-medium uppercase rounded-none border"
+                      style={{
+                        backgroundColor: isHovered
+                          ? "var(--profile-color)"
+                          : "hsl(var(--muted))",
+                        color: isHovered ? "white" : "hsl(var(--foreground))",
+                        borderColor: "var(--profile-color)",
+                        transition: "all 0.1s ease",
+                      }}
+                    >
+                      <Users className="w-3 h-3 inline mr-1" />
+                      {displayTeamName}
+                    </Badge>
+                  </div>
+                )}
 
                 <p className="text-xs text-muted-foreground line-clamp-2 px-2 min-h-[2.5rem] leading-relaxed">
                   {participant.wantsToBuild.substring(0, 80)}...
