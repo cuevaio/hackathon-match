@@ -1,0 +1,4 @@
+id,name,email,phone_number,wants_to_build,profile,website,linkedIn_handle,github_handle,x_handle,organization,has_built
+asd123asd121,Juan Pérez,juan@example.com,1234567890,true,"Desarrollador Full Stack",https://juanperez.com,juanperez,juan-github,juanx,TechOrg,true
+asd123asd122,Ana García,ana@example.com,0987654321,false,"Diseñadora UX/UI",https://anagarcia.com,anagarcia,ana-github,ana-x,DesignInc,false
+asd123asd123,Carlos López,carlos@example.com,5551234567,true,"Ingeniero de Software",https://carloslopez.com,carloslopez,carlos-github,carlosx,DevCorp,true

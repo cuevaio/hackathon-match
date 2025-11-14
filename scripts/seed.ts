@@ -1,9 +1,11 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/neon-http";
 import { participants } from "../db/schema";
 import fs from "fs";
 import path from "path";
 import { generateSecureRandomString, hashPassword } from "../lib/auth";
+import { db } from "@/db";
+
+console.log(process.env.DATABASE_URL);
 
 interface CSVParticipant {
   id: string;
@@ -56,12 +58,16 @@ function parseCSV(filePath: string): CSVParticipant[] {
 
     const match = line.match(/^([^,]+),/);
 
+
+
     if (match && match[1].length > 10 && /^[A-Za-z0-9]+$/.test(match[1])) {
+    // if (match) {
       if (currentParticipant && currentParticipant.id) {
         parsedParticipants.push(currentParticipant as CSVParticipant);
       }
 
       const parts = parseCSVLine(line);
+      console.debug(parts)
       currentParticipant = {
         id: parts[0] || "",
         name: parts[1] || "",
@@ -90,7 +96,6 @@ function parseCSV(filePath: string): CSVParticipant[] {
 }
 
 async function seed() {
-  const db = drizzle(process.env.DATABASE_URL!);
 
   const csvPath = path.join(process.cwd(), "app", "participants.csv");
   const csvParticipants = parseCSV(csvPath);
