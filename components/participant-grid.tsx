@@ -14,7 +14,7 @@ export function ParticipantGrid({ initialParticipants }: ParticipantGridProps) {
   const [participants, setParticipants] = useState(initialParticipants);
   const [progress, setProgress] = useState(100);
 
-  const SHUFFLE_INTERVAL = 20000;
+  const SHUFFLE_INTERVAL = 40000;
   const TICK_RATE = 100;
 
   const shuffleArray = useCallback((array: Participant[]) => {
